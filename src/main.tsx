@@ -10,8 +10,7 @@ import './index.css';
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    {/* 2. Provide the client to your App */}
+  <React.StrictMode>   
     <QueryClientProvider client={queryClient}>
       <App />
     </QueryClientProvider>
