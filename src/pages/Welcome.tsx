@@ -1,4 +1,7 @@
-// src/pages/Welcome.tsx
 export default function Welcome() {
-  return <h1>Hello, this is my first component!</h1>;
+  return (
+    <div>
+      <h1>Welcome to my App!</h1>
+    </div>
+  );
 }
