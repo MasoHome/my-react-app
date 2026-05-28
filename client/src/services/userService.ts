@@ -5,7 +5,8 @@ export const useUsers = () => {
   return useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const response = await fetch('https://jsonplaceholder.typicode.com/users');
+      // Point this to your local Express server
+      const response = await fetch('http://localhost:3000/api/users');
       if (!response.ok) throw new Error('Network response was not ok');
       return response.json();
     }
