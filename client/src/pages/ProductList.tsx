@@ -1,9 +1,9 @@
-
-// src/pages/UserList.tsx
 import { useProducts } from '../services/productService';
 
-const ProductList = () => {
+export default function ProductList() {
 
+  // We call our hook here. The component re-renders automatically
+  // when the data state changes (e.g., from loading to success).
   const { data: products, isLoading, error } = useProducts();
 
   if (isLoading) return <div>Loading products...</div>;
@@ -14,13 +14,13 @@ const ProductList = () => {
       <h1>Our Products</h1>
       <ul>
         {products?.map((product: any) => (
+
           <li key={product.id}>
             {product.name} - ${product.price}
           </li>
+          
         ))}
       </ul>
     </div>
   );
 };
-
-export default ProductList;

@@ -8,6 +8,8 @@ export default function Welcome() {
       
       {/* Adding the link here */}
       <Link to="/users">Go to User List</Link>
+      <br/>
+      <Link to="/products">Go to Product List</Link>
     </div>
   );
 }

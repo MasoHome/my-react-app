@@ -7,7 +7,7 @@ router.get('/', (req, res) => {
 });
 
 router.get('/profile', (req, res) => {
-  res.json({ user: "John Doe", role: "Admin" });
+  res.json({ id: "1", name: "John Doe", role: "Admin" });
 });
 
 module.exports = router;
