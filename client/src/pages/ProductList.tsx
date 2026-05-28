@@ -3,6 +3,7 @@
 import { useProducts } from '../services/productService';
 
 const ProductList = () => {
+
   const { data: products, isLoading, error } = useProducts();
 
   if (isLoading) return <div>Loading products...</div>;
@@ -12,7 +13,7 @@ const ProductList = () => {
     <div>
       <h1>Our Products</h1>
       <ul>
-        {products.map((product: any) => (
+        {products?.map((product: any) => (
           <li key={product.id}>
             {product.name} - ${product.price}
           </li>
