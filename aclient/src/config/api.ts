@@ -1,5 +1,7 @@
 // client/src/config/api.ts
-export const API_BASE = 'http:DEV_API_URL:3000/api';
+// Vite will replace this at build time
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 export const ENDPOINTS = {
   USERS: `${API_BASE}/users`,
   PRODUCTS: `${API_BASE}/products`,

@@ -23,8 +23,14 @@ jobs:
           script: |
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
             git pull
-            npm install
-            pm2 reload api-server
+            npm install 
+            # Inject the database path securely from your environment secrets
+            echo "DB_URL=${{ secrets.DB_URL }}" > .env      
+            # Use the environment name to determine the PM2 config
+            # If the env is 'prod', use --env prod, otherwise use nothing or --env dev
+            ENV_FLAG="${{ github.ref == 'refs/heads/master' && '--env prod' || '--env dev' }}"            
+            pm2 restart ecosystem.config.js $ENV_FLAG
+
 
       # 2. Deploy to Client Server
       - name: Deploy to Client Server
@@ -36,5 +42,8 @@ jobs:
           script: |
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             npm install
+            # Select the secret based on the branch
+            # GitHub injects the environment-specific secret automatically
+            REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}
             npm run build
             pm2 reload react-client
