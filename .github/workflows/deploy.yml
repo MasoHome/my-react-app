@@ -1,0 +1,42 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Automatically pick the environment based on the branch
+    environment: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      # 1. Deploy to API Server
+      - name: Deploy to API Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ secrets.SERVER_USER }}/my-react-app
+            git pull
+            npm install
+            pm2 restart api-server
+
+      # 2. Deploy to Client Server
+      - name: Deploy to Client Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ secrets.SERVER_USER }}/my-react-app
+            npm install
+            npm run build --workspace=aclient
+            pm2 restart react-client
