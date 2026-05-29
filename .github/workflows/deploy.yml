@@ -24,7 +24,7 @@ jobs:
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
             git pull
             npm install
-            pm2 restart api-server
+            pm2 reload api-server
 
       # 2. Deploy to Client Server
       - name: Deploy to Client Server
@@ -37,4 +37,4 @@ jobs:
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             npm install
             npm run build
-            pm2 restart react-client
+            pm2 reload react-client
