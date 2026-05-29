@@ -1,19 +1,28 @@
 module.exports = {
   apps: [
     {
-      name: "aclient",
-      cwd: "./aclient",
-      script: "npm",
-      args: "start", // or whatever your build/start script is
+      name: "api-server",
+      cwd: "./aserver",
+      script: "index.js",
+      watch: false, // Turn off watch in production to save resources
+      env: {
+        NODE_ENV: "dev",
+      },
+      env_production: {
+        NODE_ENV: "prod",
+      }
     },
     {
-      name: "aserver",
-      cwd: "./aserver",
-      script: "index.js", // The entry point for your server
-      watch: true,
+      name: "react-client",
+      cwd: "./aclient",
+      script: "serve", // Assuming you use 'serve' to host the build
+      args: "-s build",
       env: {
-        NODE_ENV: "development",
+        NODE_ENV: "dev",
       },
+      env_production: {
+        NODE_ENV: "prod",
+      }
     },
   ],
 };
