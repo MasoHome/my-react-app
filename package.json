@@ -1,12 +1,8 @@
 {
   "name": "my-react-app-root",
   "private": true,
-  "workspaces": [
-    "aclient",
-    "aserver"
-  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=aclient\" \"npm run dev --workspace=aserver\""
+    "dev": "concurrently \"npm run dev --prefix aclient\" \"npm run dev --prefix aserver\""
   },
   "devDependencies": {
     "concurrently": "^8.2.0"

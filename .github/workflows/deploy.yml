@@ -9,9 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Automatically pick the environment based on the branch
     environment: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
-    
     steps:
       - uses: actions/checkout@v3
 
@@ -23,7 +21,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/my-react-app
+            cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
             git pull
             npm install
             pm2 restart api-server
@@ -36,7 +34,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/my-react-app
+            cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             npm install
-            npm run build --workspace=aclient
+            npm run build
             pm2 restart react-client
