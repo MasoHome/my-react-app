@@ -106,10 +106,9 @@ jobs:
             source ~/.profile || true
             npm install
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
-            
-            # Call the local binaries directly
-            ./node_modules/.bin/tsc -b
-            ./node_modules/.bin/vite build
+                  
+            npx tsc -b
+            npx vite build
 
   deploy-prod:
     runs-on: ubuntu-latest
@@ -212,8 +211,7 @@ jobs:
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
             
             # Explicitly run the build using npx to avoid "executable" errors
-            # Call the local binaries directly
-            ./node_modules/.bin/tsc -b
-            ./node_modules/.bin/vite build
+            npx tsc -b
+            npx vite build
             
             
