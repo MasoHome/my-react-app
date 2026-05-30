@@ -23,6 +23,13 @@ jobs:
             set -e
             mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
+
+            # Add this inside the script: blocks, right after cd-ing into the directory:
+            if [ ! -d .git ]; then 
+              git init
+              git remote add origin git@github.com:MasoHome/my-react-app.git
+            fi
+
             git fetch origin
             git reset --hard origin/master
             npm install
@@ -89,6 +96,13 @@ jobs:
           script: |
             set -e
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
+
+            # Add this inside the script: blocks, right after cd-ing into the directory:
+            if [ ! -d .git ]; then 
+              git init
+              git remote add origin git@github.com:MasoHome/my-react-app.git
+            fi
+
             git fetch origin
             git reset --hard origin/master
             npm install
