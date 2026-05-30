@@ -40,6 +40,11 @@ jobs:
               curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
               sudo apt-get install -y nodejs
             fi
+
+            # Ensure PM2 is installed globally
+            if ! command -v pm2 &> /dev/null; then
+              sudo npm install -g pm2
+            fi
             
             source ~/.profile || true
             npm install
@@ -137,6 +142,11 @@ jobs:
               sudo apt-get install -y nodejs
             fi
 
+            # Ensure PM2 is installed globally
+            if ! command -v pm2 &> /dev/null; then
+              sudo npm install -g pm2
+            fi
+            
             source ~/.profile || true
             npm install
             echo "DB_URL=${{ secrets.DB_URL }}" > .env
