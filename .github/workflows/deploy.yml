@@ -24,6 +24,9 @@ jobs:
             mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
 
+            # Add this command right after cd-ing into the directory:
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
             # Add this inside the script: blocks, right after cd-ing into the directory:
             if [ ! -d .git ]; then 
               git init
@@ -96,6 +99,9 @@ jobs:
           script: |
             set -e
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
+
+            # Add this command right after cd-ing into the directory:
+            ssh-keyscan github.com >> ~/.ssh/known_hosts    
 
             # Add this inside the script: blocks, right after cd-ing into the directory:
             if [ ! -d .git ]; then 
