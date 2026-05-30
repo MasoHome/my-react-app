@@ -111,7 +111,7 @@ jobs:
             source ~/.profile || true
             npm install
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
-            npm run build
+            npx tsc -b && npx vite build
 
   deploy-prod:
     runs-on: ubuntu-latest
@@ -212,4 +212,5 @@ jobs:
             source ~/.profile || true
             npm install
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
-            npm run build
+            npx tsc -b && npx vite build
+            
