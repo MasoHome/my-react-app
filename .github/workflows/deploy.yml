@@ -33,6 +33,14 @@ jobs:
 
             git fetch origin
             git reset --hard origin/master
+            
+            # Add this check to ensure Node/npm is present
+            if ! command -v npm &> /dev/null; then
+              echo "npm not found, installing..."
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+            
             source ~/.profile || true
             npm install
             echo "DB_URL=${{ secrets.DB_URL }}" > .env
@@ -83,6 +91,13 @@ jobs:
             git fetch origin
             git reset --hard origin/master
             
+            # Add this check to ensure Node/npm is present
+            if ! command -v npm &> /dev/null; then
+              echo "npm not found, installing..."
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+
             source ~/.profile || true
             npm install
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
@@ -114,6 +129,14 @@ jobs:
 
             git fetch origin
             git reset --hard origin/master
+
+            # Add this check to ensure Node/npm is present
+            if ! command -v npm &> /dev/null; then
+              echo "npm not found, installing..."
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+
             source ~/.profile || true
             npm install
             echo "DB_URL=${{ secrets.DB_URL }}" > .env
@@ -163,6 +186,13 @@ jobs:
 
             git fetch origin
             git reset --hard origin/master
+
+            # Add this check to ensure Node/npm is present
+            if ! command -v npm &> /dev/null; then
+              echo "npm not found, installing..."
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
 
             source ~/.profile || true
             npm install
