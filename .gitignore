@@ -1,5 +1,6 @@
 # Node
 node_modules/
+ssh-key/
 npm-debug.log*
 yarn-debug.log*
 
