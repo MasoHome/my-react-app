@@ -20,24 +20,15 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-            APP_DIR="/home/${{ secrets.SERVER_USER }}/my-react-app/aserver"
-            mkdir -p $APP_DIR
-            cd $APP_DIR
+            mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
+            cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
             
-            # Setup repository if not already cloned
-            if [ ! -d ".git" ]; then
-              git clone ${{ secrets.REPO_URL }} .
-            else
-              git pull origin ${{ github.ref_name }}
-            fi
+            # The repo is already there, just fetch the latest changes
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
             
             npm install
-            
-            # Write environment variables
-            cat <<EOF > .env
-            DB_URL=${{ secrets.DB_URL }}
-            NODE_ENV=${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
-            EOF
+            echo "DB_URL=${{ secrets.DB_URL }}" > .env
             
             ENV_FLAG="${{ github.ref == 'refs/heads/master' && '--env prod' || '--env dev' }}"
             pm2 reload ecosystem.config.js $ENV_FLAG || pm2 start ecosystem.config.js $ENV_FLAG
@@ -56,17 +47,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-            APP_DIR="/home/${{ secrets.SERVER_USER }}/my-react-app/aclient"
-            mkdir -p $APP_DIR
-            cd $APP_DIR
+            mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
+            cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             
-            if [ ! -d ".git" ]; then
-              git clone ${{ secrets.REPO_URL }} .
-            else
-              git pull origin ${{ github.ref_name }}
-            fi
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
             
             npm install
-            
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
             npm run build
