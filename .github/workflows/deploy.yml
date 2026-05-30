@@ -47,6 +47,17 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
+            
+            # Setup: Install Nginx if not present
+            if ! command -v nginx &> /dev/null; then
+              echo "Nginx not found, installing..."
+              sudo apt-get update
+              sudo apt-get install -y nginx
+              sudo systemctl start nginx
+              sudo systemctl enable nginx
+            fi
+            
+            # Deploy
             mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             
