@@ -11,7 +11,7 @@ jobs:
     environment: dev
     steps:
       - uses: actions/checkout@v3
-      
+
       # 1. Deploy Backend to Dev
       - name: Deploy Backend to Dev
         uses: appleboy/ssh-action@master
@@ -38,10 +38,29 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
+            # Ensure Nginx is installed
             if ! command -v nginx &> /dev/null; then
               sudo apt-get update && sudo apt-get install -y nginx
               sudo systemctl start nginx && sudo systemctl enable nginx
             fi
+
+            # Create Nginx config if it doesn't exist
+            if [ ! -f /etc/nginx/sites-available/my-react-app ]; then
+              echo "server {
+                  listen 80;
+                  server_name _; 
+                  root /home/${{ secrets.SERVER_USER }}/my-react-app/aclient/dist;
+                  index index.html;
+                  location / {
+                      try_files \$uri \$uri/ /index.html;
+                  }
+              }" | sudo tee /etc/nginx/sites-available/my-react-app
+            fi
+
+            # Enable the config and restart Nginx
+            sudo ln -sf /etc/nginx/sites-available/my-react-app /etc/nginx/sites-enabled/
+            sudo nginx -t && sudo systemctl reload nginx
+
             mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             git fetch origin
@@ -56,7 +75,7 @@ jobs:
     environment: prod
     steps:
       - uses: actions/checkout@v3
-      
+
       # 1. Deploy Backend to Prod
       - name: Deploy Backend to Prod
         uses: appleboy/ssh-action@master
@@ -82,6 +101,29 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
+            # Ensure Nginx is installed
+            if ! command -v nginx &> /dev/null; then
+              sudo apt-get update && sudo apt-get install -y nginx
+              sudo systemctl start nginx && sudo systemctl enable nginx
+            fi
+
+            # Create Nginx config if it doesn't exist
+            if [ ! -f /etc/nginx/sites-available/my-react-app ]; then
+              echo "server {
+                  listen 80;
+                  server_name _; 
+                  root /home/${{ secrets.SERVER_USER }}/my-react-app/aclient/dist;
+                  index index.html;
+                  location / {
+                      try_files \$uri \$uri/ /index.html;
+                  }
+              }" | sudo tee /etc/nginx/sites-available/my-react-app
+            fi
+
+            # Enable the config and restart Nginx
+            sudo ln -sf /etc/nginx/sites-available/my-react-app /etc/nginx/sites-enabled/
+            sudo nginx -t && sudo systemctl reload nginx
+
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             git fetch origin
             git reset --hard origin/master
