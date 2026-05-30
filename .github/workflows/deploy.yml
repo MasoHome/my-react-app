@@ -18,7 +18,8 @@ jobs:
         with:
           host: ${{ secrets.BACKEND_SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}          
+
           script: |
             set -e
             mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
@@ -27,14 +28,12 @@ jobs:
             # Add this command right after cd-ing into the directory:
             ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-            # Add this inside the script: blocks, right after cd-ing into the directory:
-            if [ ! -d .git ]; then 
-              git init
-              git remote add origin git@github.com:MasoHome/my-react-app.git
-            fi
+            # Add this inside the script: blocks, right after cd-ing into the directory:            
+            if [ ! -d .git ]; then git init; git remote add origin git@github.com:MasoHome/my-react-app.git; fi
 
             git fetch origin
             git reset --hard origin/master
+            source ~/.profile || true
             npm install
             echo "DB_URL=${{ secrets.DB_URL }}" > .env
             pm2 reload ecosystem.config.js --env dev || pm2 start ecosystem.config.js --env dev
@@ -45,7 +44,7 @@ jobs:
         with:
           host: ${{ secrets.FRONTEND_SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}        
           script: |
             set -e
             # Ensure Nginx is installed
@@ -76,8 +75,15 @@ jobs:
               mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             fi
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
+
+            # Add these lines to make it a Git repository
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            if [ ! -d .git ]; then git init; git remote add origin git@github.com:MasoHome/my-react-app.git; fi
+
             git fetch origin
             git reset --hard origin/master
+            
+            source ~/.profile || true
             npm install
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
             npm run build
@@ -95,7 +101,7 @@ jobs:
         with:
           host: ${{ secrets.BACKEND_SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}         
           script: |
             set -e
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
@@ -104,13 +110,11 @@ jobs:
             ssh-keyscan github.com >> ~/.ssh/known_hosts    
 
             # Add this inside the script: blocks, right after cd-ing into the directory:
-            if [ ! -d .git ]; then 
-              git init
-              git remote add origin git@github.com:MasoHome/my-react-app.git
-            fi
+            if [ ! -d .git ]; then git init; git remote add origin git@github.com:MasoHome/my-react-app.git; fi
 
             git fetch origin
             git reset --hard origin/master
+            source ~/.profile || true
             npm install
             echo "DB_URL=${{ secrets.DB_URL }}" > .env
             pm2 reload ecosystem.config.js --env prod || pm2 start ecosystem.config.js --env prod
@@ -152,8 +156,15 @@ jobs:
               mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             fi
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
+
+            # Add these lines to make it a Git repository
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            if [ ! -d .git ]; then git init; git remote add origin git@github.com:MasoHome/my-react-app.git; fi
+
             git fetch origin
             git reset --hard origin/master
+
+            source ~/.profile || true
             npm install
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
             npm run build
