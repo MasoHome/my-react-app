@@ -7,45 +7,83 @@ on:
       - master
 
 jobs:
-  deploy:
+  # 1. Prepare Backend Server
+  setup-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Backend Directories
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.BACKEND_SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
+
+  # 2. Deploy to Backend Machine (API + PM2)
+  deploy-backend:
+    needs: setup-backend
     runs-on: ubuntu-latest
     environment: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
     steps:
       - uses: actions/checkout@v3
-
-      # 1. Deploy to API Server
-      - name: Deploy to API Server
+      - name: Deploy API
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.SERVER_IP }}
+          host: ${{ secrets.BACKEND_SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
-            git pull
-            npm install 
-            
-            # Inject the database path securely from your environment secrets
-            echo "DB_URL=${{ secrets.DB_URL }}" > .env      
-
-            # Use the environment name to determine the PM2 config            
-            # If the env is 'prod', use --env prod, otherwise use nothing or --env dev
-            ENV_FLAG="${{ github.ref == 'refs/heads/master' && '--env prod' || '--env dev' }}"            
+            if [ ! -d ".git" ]; then
+              git clone <your-repo-url> .
+            else
+              git pull
+            fi
+            npm install
+            echo "DB_URL=${{ secrets.DB_URL }}" > .env
+            ENV_FLAG="${{ github.ref == 'refs/heads/master' && '--env prod' || '--env dev' }}"
             pm2 reload ecosystem.config.js $ENV_FLAG
 
-
-      # 2. Deploy to Client Server
-      - name: Deploy to Client Server
+  # 3. Prepare Frontend Server
+  setup-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Nginx and Setup Frontend Directories
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.SERVER_IP }}
+          host: ${{ secrets.FRONTEND_SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            if ! command -v nginx &> /dev/null; then
+              sudo apt-get update
+              sudo apt-get install -y nginx
+              sudo systemctl start nginx
+              sudo systemctl enable nginx
+            fi
+            mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
+
+  # 4. Deploy to Frontend Machine (React/Nginx)
+  deploy-frontend:
+    needs: setup-frontend
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy Frontend
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.FRONTEND_SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
+            if [ ! -d ".git" ]; then
+              git clone <your-repo-url> .
+            else
+              git pull
+            fi
             npm install
-            # Select the secret based on the branch
-            # GitHub injects the environment-specific secret automatically
-            VITE_API_URL=${{ secrets.VITE_API_URL }}
+            echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
             npm run build
-            pm2 reload react-client
