@@ -7,22 +7,7 @@ on:
       - master
 
 jobs:
-  # 1. Prepare Backend Server
-  setup-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Backend Directories
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.BACKEND_SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
-
-  # 2. Deploy to Backend Machine (API + PM2)
   deploy-backend:
-    needs: setup-backend
     runs-on: ubuntu-latest
     environment: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
     steps:
@@ -34,40 +19,32 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
+            set -e
+            APP_DIR="/home/${{ secrets.SERVER_USER }}/my-react-app/aserver"
+            mkdir -p $APP_DIR
+            cd $APP_DIR
+            
+            # Setup repository if not already cloned
             if [ ! -d ".git" ]; then
-              git clone <your-repo-url> .
+              git clone ${{ secrets.REPO_URL }} .
             else
-              git pull
+              git pull origin ${{ github.ref_name }}
             fi
+            
             npm install
-            echo "DB_URL=${{ secrets.DB_URL }}" > .env
+            
+            # Write environment variables
+            cat <<EOF > .env
+            DB_URL=${{ secrets.DB_URL }}
+            NODE_ENV=${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
+            EOF
+            
             ENV_FLAG="${{ github.ref == 'refs/heads/master' && '--env prod' || '--env dev' }}"
-            pm2 reload ecosystem.config.js $ENV_FLAG
+            pm2 reload ecosystem.config.js $ENV_FLAG || pm2 start ecosystem.config.js $ENV_FLAG
 
-  # 3. Prepare Frontend Server
-  setup-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Nginx and Setup Frontend Directories
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.FRONTEND_SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            if ! command -v nginx &> /dev/null; then
-              sudo apt-get update
-              sudo apt-get install -y nginx
-              sudo systemctl start nginx
-              sudo systemctl enable nginx
-            fi
-            mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
-
-  # 4. Deploy to Frontend Machine (React/Nginx)
   deploy-frontend:
-    needs: setup-frontend
     runs-on: ubuntu-latest
+    needs: deploy-backend
     environment: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
     steps:
       - uses: actions/checkout@v3
@@ -78,12 +55,18 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
+            set -e
+            APP_DIR="/home/${{ secrets.SERVER_USER }}/my-react-app/aclient"
+            mkdir -p $APP_DIR
+            cd $APP_DIR
+            
             if [ ! -d ".git" ]; then
-              git clone <your-repo-url> .
+              git clone ${{ secrets.REPO_URL }} .
             else
-              git pull
+              git pull origin ${{ github.ref_name }}
             fi
+            
             npm install
+            
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
             npm run build
