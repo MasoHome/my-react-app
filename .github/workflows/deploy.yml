@@ -61,7 +61,10 @@ jobs:
             sudo ln -sf /etc/nginx/sites-available/my-react-app /etc/nginx/sites-enabled/
             sudo nginx -t && sudo systemctl reload nginx
 
-            mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
+            # Ensure deployment directory exists and deploy
+            if [ ! -d /home/${{ secrets.SERVER_USER }}/my-react-app/aclient ]; then
+              mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
+            fi
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             git fetch origin
             git reset --hard origin/master
@@ -124,6 +127,10 @@ jobs:
             sudo ln -sf /etc/nginx/sites-available/my-react-app /etc/nginx/sites-enabled/
             sudo nginx -t && sudo systemctl reload nginx
 
+            # Ensure deployment directory exists and deploy
+            if [ ! -d /home/${{ secrets.SERVER_USER }}/my-react-app/aclient ]; then
+              mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
+            fi
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             git fetch origin
             git reset --hard origin/master
