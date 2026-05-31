@@ -107,9 +107,21 @@ jobs:
               curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
               sudo apt-get install -y nodejs
             fi
+
+            # DEBUG: Verify we are in the right spot and package.json exists
+            ls -F
+            if [ ! -f "package.json" ]; then
+              echo "ERROR: package.json not found in $(pwd)"
+              exit 1
+            fi
             
             source ~/.profile || true
             npm install
+            if [ ! -d "node_modules" ]; then
+              echo "ERROR: node_modules was not created"
+              exit 1
+            fi
+
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
             npm run build
 
@@ -215,7 +227,19 @@ jobs:
               sudo apt-get install -y nodejs
             fi
             
+            #DEBUG: Verify we are in the right spot and package.json exists
+            ls -F
+            if [ ! -f "package.json" ]; then
+              echo "ERROR: package.json not found in $(pwd)"
+              exit 1
+            fi
+
             source ~/.profile || true
             npm install
+            if [ ! -d "node_modules" ]; then
+              echo "ERROR: node_modules was not created"
+              exit 1
+            fi
+
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
             npm run build
