@@ -105,7 +105,7 @@ jobs:
             git fetch origin
             git reset --hard origin/master
             git clean -fd  # This removes untracked files that might be confusing npm
-            rm .deploy_key
+            rm -f .deploy_key
             
             
             # Setup Node/npm
@@ -229,7 +229,7 @@ jobs:
             git fetch origin
             git reset --hard origin/master
             git clean -fd  # This removes untracked files that might be confusing npm
-            rm .deploy_key
+            rm -f .deploy_key
             
             # Setup Node/npm
             if ! command -v npm &> /dev/null; then
