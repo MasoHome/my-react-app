@@ -104,7 +104,9 @@ jobs:
             fi
             git fetch origin
             git reset --hard origin/master
+            git clean -fd  # This removes untracked files that might be confusing npm
             rm .deploy_key
+            
             
             # Setup Node/npm
             if ! command -v npm &> /dev/null; then
@@ -120,6 +122,9 @@ jobs:
               exit 1
             fi
             
+            # CLEAR node_modules to ensure we aren't using an old cache
+            rm -rf node_modules package-lock.json
+
             source ~/.profile || true
             npm install
             if [ ! -d "node_modules" ]; then
@@ -223,6 +228,7 @@ jobs:
             fi
             git fetch origin
             git reset --hard origin/master
+            git clean -fd  # This removes untracked files that might be confusing npm
             rm .deploy_key
             
             # Setup Node/npm
@@ -238,6 +244,9 @@ jobs:
               echo "ERROR: package.json not found in $(pwd)"
               exit 1
             fi
+
+            # CLEAR node_modules to ensure we aren't using an old cache
+            rm -rf node_modules package-lock.json
 
             source ~/.profile || true
             npm install
