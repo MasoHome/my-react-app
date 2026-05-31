@@ -93,13 +93,29 @@ jobs:
             # Force Git to use the identity file
             export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i .deploy_key"
             
-            if [ ! -d .git ]; then
-              git init
-              git remote add origin git@github.com:MasoHome/my-react-app.git
-            fi
-            git fetch origin
-            git reset --hard origin/master
-            git clean -fd  # This removes untracked files that might be confusing npm
+            # if [ ! -d .git ]; then
+            #   git init
+            #   git remote add origin git@github.com:MasoHome/my-react-app.git
+            # fi
+            # git fetch origin
+            # git reset --hard origin/master
+            # git clean -fd  # This removes untracked files that might be confusing npm
+
+            # Force the correct package.json content
+            cat <<EOF > package.json
+            {
+              "name": "aclient",
+              "version": "1.0.0",
+              "scripts": {
+                "build": "tsc -b && vite build"
+              },
+              "devDependencies": {
+                "typescript": "~6.0.2",
+                "typescript-eslint": "^8.59.2",
+                "vite": "^8.0.12"
+              }
+            }
+            EOF
             rm -f .deploy_key
             
             
@@ -217,13 +233,29 @@ jobs:
             # Force Git to use the identity file
             export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i .deploy_key"
             
-            if [ ! -d .git ]; then
-              git init
-              git remote add origin git@github.com:MasoHome/my-react-app.git
-            fi
-            git fetch origin
-            git reset --hard origin/master
-            git clean -fd  # This removes untracked files that might be confusing npm
+             # if [ ! -d .git ]; then
+            #   git init
+            #   git remote add origin git@github.com:MasoHome/my-react-app.git
+            # fi
+            # git fetch origin
+            # git reset --hard origin/master
+            # git clean -fd  # This removes untracked files that might be confusing npm
+
+            # Force the correct package.json content
+            cat <<EOF > package.json
+            {
+              "name": "aclient",
+              "version": "1.0.0",
+              "scripts": {
+                "build": "tsc -b && vite build"
+              },
+              "devDependencies": {
+                "typescript": "~6.0.2",
+                "typescript-eslint": "^8.59.2",
+                "vite": "^8.0.12"
+              }
+            }
+            EOF
             rm -f .deploy_key
             
             # Setup Node/npm
