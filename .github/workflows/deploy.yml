@@ -18,29 +18,35 @@ jobs:
         with:
           host: ${{ secrets.BACKEND_SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}          
-
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
             mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
-
-            # Add this command right after cd-ing into the directory:
+            
+            # Setup identity for Git
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" > .deploy_key
+            chmod 600 .deploy_key
             ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-            # Add this inside the script: blocks, right after cd-ing into the directory:            
-            if [ ! -d .git ]; then git init; git remote add origin git@github.com:MasoHome/my-react-app.git; fi
-
+            
+            # Force Git to use the identity file
+            export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i .deploy_key"
+            
+            if [ ! -d .git ]; then
+              git init
+              git remote add origin git@github.com:MasoHome/my-react-app.git
+            fi
             git fetch origin
             git reset --hard origin/master
-            
-            # Add this check to ensure Node/npm is present
+            rm .deploy_key
+
+            # Setup Node/npm
             if ! command -v npm &> /dev/null; then
               echo "npm not found, installing..."
               curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
               sudo apt-get install -y nodejs
             fi
-
+            
             # Ensure PM2 is installed globally
             if ! command -v pm2 &> /dev/null; then
               sudo npm install -g pm2
@@ -57,7 +63,7 @@ jobs:
         with:
           host: ${{ secrets.FRONTEND_SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}        
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
             # Ensure Nginx is installed
@@ -65,48 +71,46 @@ jobs:
               sudo apt-get update && sudo apt-get install -y nginx
               sudo systemctl start nginx && sudo systemctl enable nginx
             fi
-
+            
             # Create Nginx config if it doesn't exist
             if [ ! -f /etc/nginx/sites-available/my-react-app ]; then
-              echo "server {
-                  listen 80;
-                  server_name _; 
-                  root /home/${{ secrets.SERVER_USER }}/my-react-app/aclient/dist;
-                  index index.html;
-                  location / {
-                      try_files \$uri \$uri/ /index.html;
-                  }
-              }" | sudo tee /etc/nginx/sites-available/my-react-app
+              echo "server { listen 80; server_name _; root /home/${{ secrets.SERVER_USER }}/my-react-app/aclient/dist; index index.html; location / { try_files \$uri \$uri/ /index.html; } }" | sudo tee /etc/nginx/sites-available/my-react-app
             fi
-
+            
             # Enable the config and restart Nginx
             sudo ln -sf /etc/nginx/sites-available/my-react-app /etc/nginx/sites-enabled/
             sudo nginx -t && sudo systemctl reload nginx
-
+            
             # Ensure deployment directory exists and deploy
-            if [ ! -d /home/${{ secrets.SERVER_USER }}/my-react-app/aclient ]; then
-              mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
-            fi
+            mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
-
-            # Add these lines to make it a Git repository
+            
+            # Setup identity for Git
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" > .deploy_key
+            chmod 600 .deploy_key
             ssh-keyscan github.com >> ~/.ssh/known_hosts
-            if [ ! -d .git ]; then git init; git remote add origin git@github.com:MasoHome/my-react-app.git; fi
-
+            
+            # Force Git to use the identity file
+            export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i .deploy_key"
+            
+            if [ ! -d .git ]; then
+              git init
+              git remote add origin git@github.com:MasoHome/my-react-app.git
+            fi
             git fetch origin
             git reset --hard origin/master
+            rm .deploy_key
             
-            # Add this check to ensure Node/npm is present
+            # Setup Node/npm
             if ! command -v npm &> /dev/null; then
               echo "npm not found, installing..."
               curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
               sudo apt-get install -y nodejs
             fi
-
+            
             source ~/.profile || true
             npm install
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
-                  
             npx tsc -b
             npx vite build
 
@@ -123,27 +127,34 @@ jobs:
         with:
           host: ${{ secrets.BACKEND_SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}         
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aserver
-
-            # Add this command right after cd-ing into the directory:
-            ssh-keyscan github.com >> ~/.ssh/known_hosts    
-
-            # Add this inside the script: blocks, right after cd-ing into the directory:
-            if [ ! -d .git ]; then git init; git remote add origin git@github.com:MasoHome/my-react-app.git; fi
-
+            
+            # Setup identity for Git
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" > .deploy_key
+            chmod 600 .deploy_key
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            
+            # Force Git to use the identity file
+            export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i .deploy_key"
+            
+            if [ ! -d .git ]; then
+              git init
+              git remote add origin git@github.com:MasoHome/my-react-app.git
+            fi
             git fetch origin
             git reset --hard origin/master
-
-            # Add this check to ensure Node/npm is present
+            rm .deploy_key
+            
+            # Setup Node/npm
             if ! command -v npm &> /dev/null; then
               echo "npm not found, installing..."
               curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
               sudo apt-get install -y nodejs
             fi
-
+            
             # Ensure PM2 is installed globally
             if ! command -v pm2 &> /dev/null; then
               sudo npm install -g pm2
@@ -168,50 +179,45 @@ jobs:
               sudo apt-get update && sudo apt-get install -y nginx
               sudo systemctl start nginx && sudo systemctl enable nginx
             fi
-
+            
             # Create Nginx config if it doesn't exist
             if [ ! -f /etc/nginx/sites-available/my-react-app ]; then
-              echo "server {
-                  listen 80;
-                  server_name _; 
-                  root /home/${{ secrets.SERVER_USER }}/my-react-app/aclient/dist;
-                  index index.html;
-                  location / {
-                      try_files \$uri \$uri/ /index.html;
-                  }
-              }" | sudo tee /etc/nginx/sites-available/my-react-app
+              echo "server { listen 80; server_name _; root /home/${{ secrets.SERVER_USER }}/my-react-app/aclient/dist; index index.html; location / { try_files \$uri \$uri/ /index.html; } }" | sudo tee /etc/nginx/sites-available/my-react-app
             fi
-
-            # Enable the config and restart Nginx
+            
+            # Enable the config and reload Nginx
             sudo ln -sf /etc/nginx/sites-available/my-react-app /etc/nginx/sites-enabled/
             sudo nginx -t && sudo systemctl reload nginx
-
+            
             # Ensure deployment directory exists and deploy
-            if [ ! -d /home/${{ secrets.SERVER_USER }}/my-react-app/aclient ]; then
-              mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
-            fi
+            mkdir -p /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
             cd /home/${{ secrets.SERVER_USER }}/my-react-app/aclient
-
-            # Add these lines to make it a Git repository
+            
+            # Setup identity for Git
+            echo "${{ secrets.SSH_PRIVATE_KEY }}" > .deploy_key
+            chmod 600 .deploy_key
             ssh-keyscan github.com >> ~/.ssh/known_hosts
-            if [ ! -d .git ]; then git init; git remote add origin git@github.com:MasoHome/my-react-app.git; fi
-
+            
+            # Force Git to use the identity file
+            export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i .deploy_key"
+            
+            if [ ! -d .git ]; then
+              git init
+              git remote add origin git@github.com:MasoHome/my-react-app.git
+            fi
             git fetch origin
             git reset --hard origin/master
-
-            # Add this check to ensure Node/npm is present
+            rm .deploy_key
+            
+            # Setup Node/npm
             if ! command -v npm &> /dev/null; then
               echo "npm not found, installing..."
               curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
               sudo apt-get install -y nodejs
             fi
-
+            
             source ~/.profile || true
             npm install
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
-            
-            # Explicitly run the build using npx to avoid "executable" errors
             npx tsc -b
             npx vite build
-            
-            
